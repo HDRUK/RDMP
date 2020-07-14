@@ -56,10 +56,13 @@ namespace Rdmp.UI.PipelineUIs.DemandsInitializationUIs.ArgumentValueControls
 
             try
             {
-                Pipeline p = null;
                 try
                 {
-                    p = (Pipeline)args.InitialValue;
+                    // if the arg has a value that isn't a Pipeline that's a problem!
+                    if (args.InitialValue != null && !(args.InitialValue is Pipeline))
+                    {
+                        throw new Exception($"Argument initial value was not a Pipeline (was '{args.InitialValue})'");
+                    }
                 }
                 catch (Exception e)
                 {

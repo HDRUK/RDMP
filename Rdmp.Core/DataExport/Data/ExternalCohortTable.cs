@@ -256,7 +256,7 @@ namespace Rdmp.Core.DataExport.Data
         {
             try
             {
-                var database = Discover();
+                Discover();
 
                 DiscoveredTable cohortTable = DiscoverCohortTable();
                 if (cohortTable.Exists())

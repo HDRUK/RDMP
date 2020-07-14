@@ -157,27 +157,6 @@ namespace Rdmp.UI.Tests.DesignPatternTests.ClassFileEvaluation
                         suggestedMethodWrappers += "\tset { SetField(ref " + fieldName +",value);}" + Environment.NewLine;
                         suggestedMethodWrappers += "}" + Environment.NewLine;
                     }
-
-                    if(!setMethod.IsAbstract)
-                    {
-                        /*var instructions = setMethod.GetInstructions();
-
-                        bool foundINotify = false;
-                    
-                        foreach (Instruction instruction in instructions)
-                        {
-                            MethodInfo methodInfo = instruction.Operand as MethodInfo;
-
-                            if (methodInfo != null)
-                                if (methodInfo.Name.Equals("SetField") || methodInfo.Name.Equals("OnPropertyChanged"))
-                                    foundINotify = true;
-                        }
-
-                        if(!foundINotify)
-                            _fails.Add("FAIL:Set Method for property " + p.Name + " on Type " + type.Name + " does not include an Instruction calling method 'SetField' or 'OnPropertyChanged'");
-                        
-                        */
-                    }
                 }
                 
 
