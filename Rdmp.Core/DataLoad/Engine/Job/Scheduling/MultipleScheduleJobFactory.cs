@@ -49,14 +49,13 @@ namespace Rdmp.Core.DataLoad.Engine.Job.Scheduling
 
         protected override ScheduledDataLoadJob CreateImpl(IRDMPPlatformRepositoryServiceLocator repositoryLocator,IDataLoadEventListener listener,HICDatabaseConfiguration configuration)
         {
-            ScheduledDataLoadJob job;
             var loadProgress = _scheduleList[_lastScheduleId];
             var datesToRetrieve = _availableSchedules[loadProgress].GetDates(OverrideNumberOfDaysToLoad??_scheduleList[_lastScheduleId].DefaultNumberOfDaysToLoadEachTime, false);
             if (!datesToRetrieve.Any())
                 return null;
 
             var LoadDirectory = new LoadDirectory(LoadMetadata.LocationOfFlatFiles);
-            job = new ScheduledDataLoadJob(repositoryLocator,JobDescription, LogManager, LoadMetadata, LoadDirectory, listener,configuration);
+            var job = new ScheduledDataLoadJob(repositoryLocator,JobDescription, LogManager, LoadMetadata, LoadDirectory, listener,configuration);
             
             job.LoadProgress = loadProgress;
             job.DatesToRetrieve = datesToRetrieve;

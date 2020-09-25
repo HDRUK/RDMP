@@ -102,9 +102,6 @@ namespace Rdmp.Core.Curation
         /// <inheritdoc/>
         public void DoImport(out TableInfo tableInfoCreated, out ColumnInfo[] columnInfosCreated)
         {
-            string tableName;
-            string databaseName;
-
             try
             {
                 _server.TestConnection();
@@ -116,7 +113,7 @@ namespace Rdmp.Core.Curation
 
             var querySyntaxHelper = _server.GetQuerySyntaxHelper();
 
-            tableName = querySyntaxHelper.EnsureWrapped(_importDatabaseName);
+            var tableName = querySyntaxHelper.EnsureWrapped(_importDatabaseName);
 
             if (_type == DatabaseType.MicrosoftSQLServer || _type == DatabaseType.PostgreSql)
                 tableName += "."+(querySyntaxHelper.EnsureWrapped(_importFromSchema ?? querySyntaxHelper.GetDefaultSchemaIfAny())) +".";
@@ -126,7 +123,7 @@ namespace Rdmp.Core.Curation
                 throw new NotSupportedException("Unknown Type:" + _type);
 
             tableName += querySyntaxHelper.EnsureWrapped(_importTableName);
-            databaseName = querySyntaxHelper.EnsureWrapped(_importDatabaseName);
+            var databaseName = querySyntaxHelper.EnsureWrapped(_importDatabaseName);
 
             DiscoveredColumn[] discoveredColumns = _server.ExpectDatabase(_importDatabaseName)
                 .ExpectTable(_importTableName,_importFromSchema, _importTableType)

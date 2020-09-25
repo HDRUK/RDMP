@@ -419,10 +419,7 @@ namespace Rdmp.UI.ExtractionUIs.FilterUIs.ParameterUIs
         {
             var param = olvParameters.SelectedObject as ISqlParameter;
 
-            miOverrideParameter.Enabled = false;
-
-            if(CanOverride(param))
-                miOverrideParameter.Enabled = true;
+            miOverrideParameter.Enabled = CanOverride(param);
         }
 
         private bool CanOverride(ISqlParameter sqlParameter)

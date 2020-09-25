@@ -250,15 +250,17 @@ namespace Rdmp.UI.LocationsMenu
 
                 Console.SetOut(new StringWriter(sb));
 
-                var opts = new PlatformDatabaseCreationOptions();
-                opts.ServerName = tbSuiteServer.Text;
-                opts.Prefix = tbDatabasePrefix.Text;
-                opts.Username = tbUsername.Text;
-                opts.Password = tbPassword.Text;
-                opts.ExampleDatasets = cbCreateExampleDatasets.Checked;
-                opts.Seed = _seed;
-                opts.NumberOfPeople = _peopleCount;
-                opts.NumberOfRowsPerDataset = _rowCount;
+                var opts = new PlatformDatabaseCreationOptions
+                {
+                    NumberOfRowsPerDataset = _rowCount,
+                    NumberOfPeople = _peopleCount,
+                    Seed = _seed,
+                    ExampleDatasets = cbCreateExampleDatasets.Checked,
+                    Password = tbPassword.Text,
+                    Username = tbUsername.Text,
+                    Prefix = tbDatabasePrefix.Text,
+                    ServerName = tbSuiteServer.Text
+                };
 
                 bool failed = false;
 

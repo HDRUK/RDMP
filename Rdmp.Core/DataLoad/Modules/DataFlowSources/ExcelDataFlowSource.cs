@@ -86,10 +86,8 @@ namespace Rdmp.Core.DataLoad.Modules.DataFlowSources
 
                 try
                 {
-                    ISheet worksheet;
-
                     //if the user hasn't picked one, use the first
-                    worksheet = string.IsNullOrWhiteSpace(WorkSheetName) ? wb.GetSheetAt(0) : wb.GetSheet(WorkSheetName);
+                    var worksheet = string.IsNullOrWhiteSpace(WorkSheetName) ? wb.GetSheetAt(0) : wb.GetSheet(WorkSheetName);
 
                     if (worksheet == null)
                         throw new FlatFileLoadException(string.Format("The Excel sheet '{0}' was not found in workbook '{1}'", WorkSheetName, _fileToLoad.File.Name));

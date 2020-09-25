@@ -123,8 +123,7 @@ namespace Rdmp.Core.Tests.DataLoad.Engine.Integration
             string sql = @"UPDATE {T:0} Set {C:0} = 1";
             
             IRuntimeTask task;
-            IProcessTask pt;
-            
+
             var dir = LoadDirectory.CreateDirectoryStructure(new DirectoryInfo(TestContext.CurrentContext.TestDirectory),"ExecuteSqlFileRuntimeTaskTests", true);
                        
             var sqlArg = new IArgument[]{Mock.Of<IArgument>(x => 
@@ -134,9 +133,9 @@ namespace Rdmp.Core.Tests.DataLoad.Engine.Integration
 
             var args = new RuntimeArgumentCollection(sqlArg, new StageArgs(LoadStage.AdjustRaw, db, dir));
 
-            pt = Mock.Of<IProcessTask>(x => 
-            x.Path == typeof(ExecuteSqlMutilation).FullName &&
-            x.GetAllArguments() == sqlArg
+            var pt = Mock.Of<IProcessTask>(x => 
+                x.Path == typeof(ExecuteSqlMutilation).FullName &&
+                x.GetAllArguments() == sqlArg
             );
 
             task = new MutilateDataTablesRuntimeTask(pt,args,CatalogueRepository.MEF);

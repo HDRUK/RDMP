@@ -172,8 +172,6 @@ namespace Rdmp.Core.DataLoad.Modules.FTP
             StreamReader reader = null;
             try
             {
-                FtpWebRequest reqFTP;
-
                 string uri;
 
 
@@ -182,7 +180,7 @@ namespace Rdmp.Core.DataLoad.Modules.FTP
                 else
                     uri = "ftp://" + _host;
 
-                reqFTP = (FtpWebRequest)FtpWebRequest.Create(new Uri(uri));
+                var reqFTP = (FtpWebRequest)FtpWebRequest.Create(new Uri(uri));
                 reqFTP.UseBinary = true;
                 reqFTP.Credentials = new NetworkCredential(_username, _password);
                 reqFTP.Method = WebRequestMethods.Ftp.ListDirectory;

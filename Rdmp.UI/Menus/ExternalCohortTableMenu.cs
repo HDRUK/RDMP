@@ -27,9 +27,7 @@ namespace Rdmp.UI.Menus
             Add(new ExecuteCommandCreateNewCohortFromCatalogue(_activator,externalCohortTable));
             Items.Add(new ToolStripSeparator());
 
-            var projectOnlyNode = args.Masquerader as CohortSourceUsedByProjectNode;
-
-            if (projectOnlyNode != null)
+            if (args.Masquerader is CohortSourceUsedByProjectNode projectOnlyNode)
                 Add(new ExecuteCommandShowSummaryOfCohorts(_activator, projectOnlyNode));
             else
                 Add(new ExecuteCommandShowSummaryOfCohorts(_activator, externalCohortTable));

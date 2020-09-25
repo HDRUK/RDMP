@@ -37,7 +37,6 @@ namespace Rdmp.Core.DataQualityEngine
 
         public Tuple<DateTime?, DateTime?> GetMachineReadableTimepsanIfKnownOf(Catalogue catalogue, bool discardOutliers, out DateTime? accurateAsOf)
         {
-            DataTable dt;
             accurateAsOf = null;
             
             Evaluation mostRecentEvaluation = null;
@@ -56,7 +55,7 @@ namespace Rdmp.Core.DataQualityEngine
                 return Unknown();
 
             accurateAsOf = mostRecentEvaluation.DateOfEvaluation;
-            dt = PeriodicityState.GetPeriodicityForDataTableForEvaluation(mostRecentEvaluation, "ALL", false);
+            var dt = PeriodicityState.GetPeriodicityForDataTableForEvaluation(mostRecentEvaluation, "ALL", false);
 
             if (dt == null || dt.Rows.Count < 2)
                 return Unknown();
