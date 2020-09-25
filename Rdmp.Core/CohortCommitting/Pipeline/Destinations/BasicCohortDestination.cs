@@ -156,8 +156,8 @@ namespace Rdmp.Core.CohortCommitting.Pipeline.Destinations
                     var tbl = Request.NewCohortDefinition.LocationOfCohort.DiscoverCohortTable();
 
                     using (var bulkCopy = tbl.BeginBulkInsert(connection.ManagedTransaction))
+                    using (var dt = new DataTable())
                     {
-                        var dt = new DataTable();
                         dt.Columns.Add(_privateIdentifier);
                         dt.Columns.Add(_releaseIdentifier);
 

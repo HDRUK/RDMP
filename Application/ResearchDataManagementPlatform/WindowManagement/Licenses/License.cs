@@ -51,8 +51,9 @@ namespace ResearchDataManagementPlatform.WindowManagement.Licenses
         public string GetLicenseText()
         {
             using (var stream = GetStream())
+                using (var reader = new StreamReader(stream))
             {
-                return new StreamReader(stream).ReadToEnd();
+                return reader.ReadToEnd();
             }
         }
 

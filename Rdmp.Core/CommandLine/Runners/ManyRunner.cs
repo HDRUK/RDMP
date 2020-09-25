@@ -59,8 +59,7 @@ namespace Rdmp.Core.CommandLine.Runners
 
                     foreach (object runnable in runnables)
                     {
-                        if (semaphore != null)
-                            semaphore.WaitOne();
+                        semaphore?.WaitOne();
 
                         object r = runnable;
                         tasks.Add(Task.Run(() =>
@@ -71,8 +70,7 @@ namespace Rdmp.Core.CommandLine.Runners
                             }
                             finally
                             {
-                                if (semaphore != null)
-                                    semaphore.Release();
+                                semaphore?.Release();
                             }
                         }));
                     }
@@ -86,8 +84,7 @@ namespace Rdmp.Core.CommandLine.Runners
                     ICheckable[] checkables = GetCheckables(checkNotifier);
                     foreach (ICheckable checkable in checkables)
                     {
-                        if (semaphore != null)
-                            semaphore.WaitOne();
+                        semaphore?.WaitOne();
 
                         ICheckable checkable1 = checkable;
                         var memory = new ToMemoryCheckNotifier(checkNotifier);
@@ -103,8 +100,7 @@ namespace Rdmp.Core.CommandLine.Runners
                             }
                             finally
                             {
-                                if (semaphore != null)
-                                    semaphore.Release();
+                                semaphore?.Release();
                             }
                         }));
                     }
@@ -115,7 +111,7 @@ namespace Rdmp.Core.CommandLine.Runners
             }
             
             Task.WaitAll(tasks.ToArray());
-
+            semaphore?.Dispose();
             AfterRun();
 
             return 0;

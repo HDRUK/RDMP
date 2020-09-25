@@ -44,8 +44,17 @@ namespace Rdmp.Core.Curation
 
         public SimpleStringValueEncryption(RSAParameters? parameters)
         {
-            //use the memory one no parameters passed
-            PrivateKey = parameters ?? (RSAParameters)new XmlSerializer(typeof(RSAParameters)).Deserialize(new StringReader(Key));
+            //use the memory one if no parameters passed
+            if (parameters == null)
+            {
+                using (var reader = new StringReader(Key))
+                    PrivateKey =
+                        (RSAParameters) new XmlSerializer(typeof(RSAParameters)).Deserialize(reader);
+            }
+            else
+            {
+                PrivateKey = (RSAParameters)parameters;
+            }
         }
 
         /// <summary>

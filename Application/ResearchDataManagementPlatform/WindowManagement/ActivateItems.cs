@@ -696,10 +696,9 @@ namespace ResearchDataManagementPlatform.WindowManagement
 
         public override DirectoryInfo SelectDirectory(string prompt)
         {
-            var fb = new FolderBrowserDialog();
-
-            if (fb.ShowDialog() == DialogResult.OK)
-                return new DirectoryInfo(fb.SelectedPath);
+            using (var fb = new FolderBrowserDialog())
+                if (fb.ShowDialog() == DialogResult.OK)
+                    return new DirectoryInfo(fb.SelectedPath);
             
             return null;
         }
@@ -711,14 +710,15 @@ namespace ResearchDataManagementPlatform.WindowManagement
 
         public override FileInfo SelectFile(string prompt, string patternDescription, string pattern)
         {
-            var fb = new OpenFileDialog {CheckFileExists = false,Multiselect = false};
+            using (var fb = new OpenFileDialog {CheckFileExists = false, Multiselect = false})
+            {
+                if (patternDescription != null && pattern != null)
+                    fb.Filter = patternDescription + "|" + pattern;
 
-            if (patternDescription != null && pattern != null)
-                fb.Filter = patternDescription + "|" + pattern;
+                if (fb.ShowDialog() == DialogResult.OK)
+                    return new FileInfo(fb.FileName);
+            }
 
-            if (fb.ShowDialog() == DialogResult.OK)
-                return new FileInfo(fb.FileName);
-            
             return null;
         }
         

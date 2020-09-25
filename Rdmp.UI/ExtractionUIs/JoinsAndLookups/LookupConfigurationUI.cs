@@ -260,7 +260,6 @@ namespace Rdmp.UI.ExtractionUIs.JoinsAndLookups
         }
         void DrawArrows(Graphics graphics)
         {
-            var arrowPen = new Pen(Color.DarkGray,2);
 
             GraphicsPath capPath = new GraphicsPath();
             
@@ -270,38 +269,38 @@ namespace Rdmp.UI.ExtractionUIs.JoinsAndLookups
             capPath.AddLine(new Point(0, 0), new Point(-2, -2));
             capPath.AddLine(new Point(-2, -2),new Point(0, 0));
 
-            arrowPen.CustomEndCap = new CustomLineCap(null, capPath);
-    
-            
-            switch (_currentStage)
+            using (var arrowPen = new Pen(Color.DarkGray, 2) {CustomEndCap = new CustomLineCap(null, capPath)})
             {
-                case LookupCreationStage.ChooseLookupTable:
-                    break;
-                case LookupCreationStage.DragAPrimaryKey:
+                switch (_currentStage)
+                {
+                    case LookupCreationStage.ChooseLookupTable:
+                        break;
+                    case LookupCreationStage.DragAPrimaryKey:
 
-                    DrawCurveWithLabel(
-                        new PointF(groupBox1.Right + 10, groupBox1.Top + (groupBox1.Height / 2f)),
-                        new PointF(pk1.Left - 10, pk1.Top - 2),
-                        "2. Drag Primary Key Column", graphics, arrowPen);
-                    break;
-                case LookupCreationStage.DragAForeignKey:
+                        DrawCurveWithLabel(
+                            new PointF(groupBox1.Right + 10, groupBox1.Top + (groupBox1.Height / 2f)),
+                            new PointF(pk1.Left - 10, pk1.Top - 2),
+                            "2. Drag Primary Key Column", graphics, arrowPen);
+                        break;
+                    case LookupCreationStage.DragAForeignKey:
 
-                    DrawCurveWithLabel(
-                        new PointF(olvExtractionInformations.Right + 10, olvExtractionInformations.Bottom - (olvExtractionInformations.Height / 10f)),
-                        new PointF(olvSelectedDescriptionColumns.Right + 100, olvSelectedDescriptionColumns.Bottom + 200),
-                        new PointF(fk1.Right + 500, fk1.Top + 100),
-                        new PointF(fk1.Right + 15, fk1.Bottom - 10),
-                        "3. Drag Matching Foreign Key Column", graphics, arrowPen);
-                    break;
-                case LookupCreationStage.DragADescription:
-                    DrawCurveWithLabel(
-                    new PointF(groupBox1.Right + 10, groupBox1.Top + (groupBox1.Height / 2f)),
-                    new PointF(olvSelectedDescriptionColumns.Left - 10, olvSelectedDescriptionColumns.Top - 2),
-                    "4. Drag a Description Column", graphics, arrowPen);
+                        DrawCurveWithLabel(
+                            new PointF(olvExtractionInformations.Right + 10, olvExtractionInformations.Bottom - (olvExtractionInformations.Height / 10f)),
+                            new PointF(olvSelectedDescriptionColumns.Right + 100, olvSelectedDescriptionColumns.Bottom + 200),
+                            new PointF(fk1.Right + 500, fk1.Top + 100),
+                            new PointF(fk1.Right + 15, fk1.Bottom - 10),
+                            "3. Drag Matching Foreign Key Column", graphics, arrowPen);
+                        break;
+                    case LookupCreationStage.DragADescription:
+                        DrawCurveWithLabel(
+                            new PointF(groupBox1.Right + 10, groupBox1.Top + (groupBox1.Height / 2f)),
+                            new PointF(olvSelectedDescriptionColumns.Left - 10, olvSelectedDescriptionColumns.Top - 2),
+                            "4. Drag a Description Column", graphics, arrowPen);
 
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
         private void DrawCurveWithLabel(PointF start, PointF end, string label,Graphics g, Pen p)

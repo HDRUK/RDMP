@@ -306,9 +306,9 @@ namespace Rdmp.Core.Curation.Data.ImportExport
         /// <returns></returns>
         public IEnumerable<IMapsDirectlyToDatabaseTable> ImportSharedObject(Stream sharedObjectsFile, bool deleteExisting = false)
         {
-            var sr = new StreamReader(sharedObjectsFile);
-            var text = sr.ReadToEnd();
-
+            string text;
+            using (var sr = new StreamReader(sharedObjectsFile))
+                text = sr.ReadToEnd();
             return ImportSharedObject(text);
         }
 

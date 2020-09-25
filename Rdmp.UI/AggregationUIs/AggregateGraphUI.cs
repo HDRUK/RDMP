@@ -792,10 +792,11 @@ namespace Rdmp.UI.AggregationUIs
 
         public IEnumerable<BitmapWithDescription> GetImages()
         {
-            var b = new Bitmap(chart1.Width, chart1.Height);
-            chart1.DrawToBitmap(b, new Rectangle(new Point(0, 0), new Size(chart1.Width, chart1.Height)));
-            
-            yield return new BitmapWithDescription(b,AggregateConfiguration.Name,AggregateConfiguration.Description);
+            using (var b = new Bitmap(chart1.Width, chart1.Height))
+            {
+                chart1.DrawToBitmap(b, new Rectangle(new Point(0, 0), new Size(chart1.Width, chart1.Height)));
+                yield return new BitmapWithDescription(b, AggregateConfiguration.Name, AggregateConfiguration.Description);
+            }
 
             if (heatmapUI.HasDataTable())
                 yield return new BitmapWithDescription(heatmapUI.GetImage(800),null,null);
@@ -803,24 +804,22 @@ namespace Rdmp.UI.AggregationUIs
         
         private void MiSaveImagesClick(object sender, EventArgs e)
         {
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.FileName = "Chart.jpg";
-            sfd.Filter = "Jpeg|*.jpg";
-            if (sfd.ShowDialog() == DialogResult.OK)
-            {
-                chart1.SaveImage(sfd.FileName, ChartImageFormat.Jpeg);
-
-                if (heatmapUI.HasDataTable())
+            using (SaveFileDialog sfd = new SaveFileDialog { FileName = "Chart.jpg", Filter = "Jpeg|*.jpg" })
+                if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    var directory = Path.GetDirectoryName(sfd.FileName);
-                    var filename = Path.GetFileNameWithoutExtension(sfd.FileName) + "_HeatMap.jpg";
-                    string heatmapPath = Path.Combine(directory, filename);
+                    chart1.SaveImage(sfd.FileName, ChartImageFormat.Jpeg);
 
-                    heatmapUI.SaveImage(heatmapPath, ImageFormat.Jpeg);
+                    if (heatmapUI.HasDataTable())
+                    {
+                        var directory = Path.GetDirectoryName(sfd.FileName);
+                        var filename = Path.GetFileNameWithoutExtension(sfd.FileName) + "_HeatMap.jpg";
+                        string heatmapPath = Path.Combine(directory, filename);
+
+                        heatmapUI.SaveImage(heatmapPath, ImageFormat.Jpeg);
+                    }
+
+                    UsefulStuff.GetInstance().ShowFileInWindowsExplorer(new FileInfo(sfd.FileName));
                 }
-                
-                UsefulStuff.GetInstance().ShowFileInWindowsExplorer(new FileInfo(sfd.FileName));
-            }
         }
 
         private void ClipboardClick(object sender, EventArgs e)

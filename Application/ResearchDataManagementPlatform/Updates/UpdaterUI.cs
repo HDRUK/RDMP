@@ -85,14 +85,22 @@ namespace ResearchDataManagementPlatform.Updates
                         else
                         {
                             var setupFile = Path.Combine(Environment.CurrentDirectory, "..", "packages", "Setup.exe");
-                            new WebClient().DownloadFile(entry.BaseUrl + "Setup.exe", setupFile);
-                            var proc = new Process() {StartInfo = new ProcessStartInfo(setupFile)};
-                            proc.EnableRaisingEvents = true;
-                            proc.Exited += (s, e) => Application.Exit();
-                            proc.Start();
-                            proc.WaitForExit();
-                        }
+                            using (var wc = new WebClient())
+                            {
+                                wc.DownloadFile(entry.BaseUrl + "Setup.exe", setupFile);
+                            }
 
+                            using (var proc = new Process
+                            {
+                                StartInfo = new ProcessStartInfo(setupFile),
+                                EnableRaisingEvents = true
+                            })
+                            {
+                                proc.Exited += (s, e) => Application.Exit();
+                                proc.Start();
+                                proc.WaitForExit();
+                            }
+                        }
 
                     }
                 }
@@ -168,12 +176,15 @@ namespace ResearchDataManagementPlatform.Updates
 
         private ReleaseEntry DownloadRelease(Asset releaseFile)
         {
-            var content = new WebClient().DownloadString(releaseFile.browser_download_url);
-            content = content.Replace(
-                "ResearchDataManagementPlatform",
-                releaseFile.browser_download_url.Replace("RELEASES", "") + "ResearchDataManagementPlatform");
-            var result = ReleaseEntry.ParseReleaseFile(content).First();
-            return result;
+            using (var wc = new WebClient())
+            {
+                var content = wc.DownloadString(releaseFile.browser_download_url);
+                content = content.Replace(
+                    "ResearchDataManagementPlatform",
+                    releaseFile.browser_download_url.Replace("RELEASES", "") + "ResearchDataManagementPlatform");
+                var result = ReleaseEntry.ParseReleaseFile(content).First();
+                return result;
+            }
         }
 
         private void FinishedLoading()

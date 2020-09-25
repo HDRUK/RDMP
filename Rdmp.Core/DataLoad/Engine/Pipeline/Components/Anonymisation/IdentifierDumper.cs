@@ -82,44 +82,48 @@ namespace Rdmp.Core.DataLoad.Engine.Pipeline.Components.Anonymisation
                     if(con.State != ConnectionState.Open)
                         con.Open();
 
-                    SqlBulkCopy bulkCopy = new SqlBulkCopy(con);
-                    bulkCopy.DestinationTableName = GetStagingRuntimeName();
-            
-                    List<string> uniqueNamesAdded = new List<string>();
-
-                    //wire up the identifiers
-                    foreach (PreLoadDiscardedColumn column in ColumnsToRouteToSomewhereElse.Where(c => c.GoesIntoIdentifierDump()))
+                    using (SqlBulkCopy bulkCopy = new SqlBulkCopy(con) {DestinationTableName = GetStagingRuntimeName()})
                     {
-                        bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.RuntimeColumnName,column.RuntimeColumnName));
-                        uniqueNamesAdded.Add(column.RuntimeColumnName);
-                    }
+                        List<string> uniqueNamesAdded = new List<string>();
 
-                    var pks = TableInfo.ColumnInfos.Where(c => c.IsPrimaryKey).ToArray();
-            
-                    //wire up the primary keys
-                    foreach (ColumnInfo pk in pks)
-                    {
-                        var pkName = pk.GetRuntimeName(LoadStage.AdjustRaw);
+                        //wire up the identifiers
+                        foreach (PreLoadDiscardedColumn column in ColumnsToRouteToSomewhereElse.Where(c =>
+                            c.GoesIntoIdentifierDump()))
+                        {
+                            bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(column.RuntimeColumnName,
+                                column.RuntimeColumnName));
+                            uniqueNamesAdded.Add(column.RuntimeColumnName);
+                        }
 
-                        //if we have not already added it (can be the case if there is a PreLoadDiscardedColumn which is also a primary key e.g. in the case of dilution)
-                        if (uniqueNamesAdded.Contains(pkName))
-                            continue;
+                        var pks = TableInfo.ColumnInfos.Where(c => c.IsPrimaryKey).ToArray();
 
-                        uniqueNamesAdded.Add(pkName);
-                        bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(pkName,pkName));
-                        
-                        
-                    }
+                        //wire up the primary keys
+                        foreach (ColumnInfo pk in pks)
+                        {
+                            var pkName = pk.GetRuntimeName(LoadStage.AdjustRaw);
 
-                    try
-                    {
-                        bulkCopy.WriteToServer(inDataTable);
+                            //if we have not already added it (can be the case if there is a PreLoadDiscardedColumn which is also a primary key e.g. in the case of dilution)
+                            if (uniqueNamesAdded.Contains(pkName))
+                                continue;
+
+                            uniqueNamesAdded.Add(pkName);
+                            bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(pkName, pkName));
+                        }
+
+                        try
+                        {
+                            bulkCopy.WriteToServer(inDataTable);
+                        }
+                        catch (Exception e)
+                        {
+                            throw new Exception(
+                                "IdentifierDumper STAGING insert (" + bulkCopy.DestinationTableName +
+                                ") failed, make sure you have called CreateSTAGINGTable() before trying to Dump identifiers (also you should call DropStagging() when you are done)",
+                                e);
+                        }
+
+                        MergeStagingWithLive(pks.Select(col => col.GetRuntimeName(LoadStage.AdjustRaw)).ToArray());
                     }
-                    catch (Exception e)
-                    {
-                        throw new Exception("IdentifierDumper STAGING insert (" + bulkCopy.DestinationTableName + ") failed, make sure you have called CreateSTAGINGTable() before trying to Dump identifiers (also you should call DropStagging() when you are done)",e);
-                    }
-                    MergeStagingWithLive(pks.Select(col => col.GetRuntimeName(LoadStage.AdjustRaw)).ToArray());
                 }
 
                 HaveDumpedRecords = true;
@@ -355,56 +359,62 @@ namespace Rdmp.Core.DataLoad.Engine.Pipeline.Components.Anonymisation
         {
 
             using (var con = (SqlConnection)_dumpDatabase.Server.GetConnection())
-           {
-               con.Open(); 
+            {
+                con.Open();
 
-              DataTable pks = new DataTable();
-              pks.Columns.Add("RuntimeName");
-              pks.Columns.Add("DataType");
+                using (DataTable pks = new DataTable())
+                using (DataTable dumpColumns = new DataTable())
+                {
+                    pks.Columns.Add("RuntimeName");
+                    pks.Columns.Add("DataType");
 
-              foreach (ColumnInfo columnInfo in primaryKeyColumnInfos)
-              {
-                  string runtimeName = columnInfo.GetRuntimeName(LoadStage.AdjustRaw);
-                  string dataType = columnInfo.GetRuntimeDataType(LoadStage.AdjustRaw);
+                    foreach (ColumnInfo columnInfo in primaryKeyColumnInfos)
+                    {
+                        string runtimeName = columnInfo.GetRuntimeName(LoadStage.AdjustRaw);
+                        string dataType = columnInfo.GetRuntimeDataType(LoadStage.AdjustRaw);
+
+                        pks.Rows.Add(new object[] {runtimeName, dataType});
+                    }
+
+                    dumpColumns.Columns.Add("RuntimeName");
+                    dumpColumns.Columns.Add("DataType");
+              
+                    foreach (PreLoadDiscardedColumn discardedColumn in _tableInfo.PreLoadDiscardedColumns.Where(d=>d.GoesIntoIdentifierDump()))
+                    {
+                        if(discardedColumn.RuntimeColumnName.StartsWith("ANO"))
+                            throw new Exception("Why are you trying to discard column " + discardedColumn.RuntimeColumnName + ", it looks like an ANO column in which case it should have an ANOTable transform rather than being a dump field.");
                   
-                  pks.Rows.Add(new object[] { runtimeName, dataType });
-              }
-
-              DataTable dumpColumns = new DataTable();
-              dumpColumns.Columns.Add("RuntimeName");
-              dumpColumns.Columns.Add("DataType");
-              
-              foreach (PreLoadDiscardedColumn discardedColumn in _tableInfo.PreLoadDiscardedColumns.Where(d=>d.GoesIntoIdentifierDump()))
-              {
-                  if(discardedColumn.RuntimeColumnName.StartsWith("ANO"))
-                      throw new Exception("Why are you trying to discard column " + discardedColumn.RuntimeColumnName + ", it looks like an ANO column in which case it should have an ANOTable transform rather than being a dump field.");
+                        if(discardedColumn.SqlDataType == null)
+                            throw new Exception(discardedColumn.GetType().Name + " called " + discardedColumn.RuntimeColumnName + " does not have an assigned type");
                   
-                  if(discardedColumn.SqlDataType == null)
-                      throw new Exception(discardedColumn.GetType().Name + " called " + discardedColumn.RuntimeColumnName + " does not have an assigned type");
-                  
-                  dumpColumns.Rows.Add(new object[] { discardedColumn.RuntimeColumnName, discardedColumn.SqlDataType});
-              }
+                        dumpColumns.Rows.Add(new object[] { discardedColumn.RuntimeColumnName, discardedColumn.SqlDataType});
+                    }
 
               
-              if(dumpColumns.Rows.Count == 0)
-                  throw new Exception("Cannot create an identifier dump with no dump columns");
-              
-              SqlCommand cmdCreate = new SqlCommand("EXEC " + IdentifierDumpCreatorStoredprocedure + " @liveTableName,@primaryKeys,@dumpColumns",con);
+                    if(dumpColumns.Rows.Count == 0)
+                        throw new Exception("Cannot create an identifier dump with no dump columns");
 
-              cmdCreate.Parameters.AddWithValue("@liveTableName", _tableInfo.GetRuntimeName());
+                    using (SqlCommand cmdCreate =
+                        new SqlCommand(
+                            "EXEC " + IdentifierDumpCreatorStoredprocedure +
+                            " @liveTableName,@primaryKeys,@dumpColumns", con))
+                    {
+                        cmdCreate.Parameters.AddWithValue("@liveTableName", _tableInfo.GetRuntimeName());
 
-              cmdCreate.Parameters.AddWithValue("@primaryKeys", pks);
-              cmdCreate.Parameters["@primaryKeys"].SqlDbType = SqlDbType.Structured;
-              cmdCreate.Parameters["@primaryKeys"].TypeName = "dbo.ColumnInfo";
+                        cmdCreate.Parameters.AddWithValue("@primaryKeys", pks);
+                        cmdCreate.Parameters["@primaryKeys"].SqlDbType = SqlDbType.Structured;
+                        cmdCreate.Parameters["@primaryKeys"].TypeName = "dbo.ColumnInfo";
 
-              cmdCreate.Parameters.AddWithValue("@dumpColumns", dumpColumns);
-              cmdCreate.Parameters["@dumpColumns"].SqlDbType = SqlDbType.Structured;
-              cmdCreate.Parameters["@dumpColumns"].TypeName = "dbo.ColumnInfo";
-              
-              cmdCreate.ExecuteNonQuery();
-               
-           }
-            
+                        cmdCreate.Parameters.AddWithValue("@dumpColumns", dumpColumns);
+                        cmdCreate.Parameters["@dumpColumns"].SqlDbType = SqlDbType.Structured;
+                        cmdCreate.Parameters["@dumpColumns"].TypeName = "dbo.ColumnInfo";
+
+                        cmdCreate.ExecuteNonQuery();
+                    }
+                }
+
+            }
+
         }
 
 

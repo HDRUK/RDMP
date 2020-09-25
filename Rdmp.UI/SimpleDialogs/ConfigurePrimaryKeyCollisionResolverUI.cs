@@ -177,9 +177,11 @@ namespace Rdmp.UI.SimpleDialogs
             Point right = new Point(lbConflictResolutionColumns.Width, top);
 
             //draw over the old one in the background colour (incase it has moved) - we don't want to leave trails
-            g.DrawLine(new System.Drawing.Pen(lbConflictResolutionColumns.BackColor, 2), draggingOldLeftPoint,
-                draggingOldRightPoint);
-            g.DrawLine(new System.Drawing.Pen(Color.Black, 2), left, right);
+            using (var pen = new System.Drawing.Pen(lbConflictResolutionColumns.BackColor, 2))
+                g.DrawLine(pen, draggingOldLeftPoint,
+                    draggingOldRightPoint);
+            using (var pen = new System.Drawing.Pen(Color.Black, 2))
+                g.DrawLine(pen, left, right);
 
             draggingOldLeftPoint = left;
             draggingOldRightPoint = right;
@@ -283,7 +285,8 @@ namespace Rdmp.UI.SimpleDialogs
 
             // draw the background color you want
             // mine is set to olive, change it to whatever you want
-            g.FillRectangle(new SolidBrush(e.BackColor), e.Bounds);
+            using(var brush = new SolidBrush(e.BackColor))
+                g.FillRectangle(brush, e.Bounds);
 
             // draw the text of the list item, not doing this will only show
             // the background color
@@ -294,14 +297,13 @@ namespace Rdmp.UI.SimpleDialogs
                 string toDisplay = (sender as ListBox).Items[e.Index].ToString();
 
                 //if it matches filter
-                if (toDisplay.ToLower().Contains(tbHighlight.Text.ToLower())
-                    &&
-                    //and filter isn't blank
-                    !string.IsNullOrWhiteSpace(tbHighlight.Text))
-                    g.DrawString(toDisplay, new Font(e.Font, FontStyle.Regular), new SolidBrush(Color.HotPink),
-                        new PointF(e.Bounds.X, e.Bounds.Y));
-                else
-                    g.DrawString(toDisplay, new Font(e.Font, FontStyle.Regular), new SolidBrush(Color.Black),
+                var matches = toDisplay.ToLower().Contains(tbHighlight.Text.ToLower())
+                              &&
+                              //and filter isn't blank
+                              !string.IsNullOrWhiteSpace(tbHighlight.Text);
+                using (var font = new Font(e.Font, FontStyle.Regular))
+                using (var brush = new SolidBrush(matches ? Color.HotPink : Color.Black))
+                    g.DrawString(toDisplay, font, brush,
                         new PointF(e.Bounds.X, e.Bounds.Y));
             }
             e.DrawFocusRectangle();

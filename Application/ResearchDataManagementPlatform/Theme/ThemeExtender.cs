@@ -25,7 +25,9 @@ namespace ResearchDataManagementPlatform.Theme
 
         public ThemeExtender(byte[] bytes)
         {
-            _xml = XDocument.Load(new StreamReader(new MemoryStream(bytes)));
+            using (var ms = new MemoryStream(bytes))
+                using (var sr = new StreamReader(ms))
+                _xml = XDocument.Load(sr);
             TextBoxBackground = ColorTranslatorFromHtml("CommonControls", "TextBoxBackground");
             
             ComboBoxBackground = ColorTranslatorFromHtml(Env, "ComboBoxBackground");

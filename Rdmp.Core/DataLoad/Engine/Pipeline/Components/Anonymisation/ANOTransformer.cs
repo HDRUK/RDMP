@@ -154,31 +154,38 @@ namespace Rdmp.Core.DataLoad.Engine.Pipeline.Components.Anonymisation
                     }
 
                     string substituteForANOIdentifiersProc = SubstitutionStoredprocedure;
-                
-                    SqlCommand cmdSubstituteIdentifiers = new SqlCommand(substituteForANOIdentifiersProc, con);
-                    cmdSubstituteIdentifiers.CommandType = CommandType.StoredProcedure;
-                    cmdSubstituteIdentifiers.CommandTimeout = 500;
-                    cmdSubstituteIdentifiers.Transaction = transaction;
 
-                    cmdSubstituteIdentifiers.Parameters.Add("@batch", SqlDbType.Structured);
-                    cmdSubstituteIdentifiers.Parameters.Add("@tableName", SqlDbType.VarChar, 500);
-                    cmdSubstituteIdentifiers.Parameters.Add("@numberOfIntegersToUseInAnonymousRepresentation", SqlDbType.Int);
-                    cmdSubstituteIdentifiers.Parameters.Add("@numberOfCharactersToUseInAnonymousRepresentation", SqlDbType.Int);
-                    cmdSubstituteIdentifiers.Parameters.Add("@suffix", SqlDbType.VarChar,10);
-
-                    //table valued parameter
-                    cmdSubstituteIdentifiers.Parameters["@batch"].TypeName = "dbo.Batch";
-                    cmdSubstituteIdentifiers.Parameters["@batch"].Value = table;
-
-                    cmdSubstituteIdentifiers.Parameters["@tableName"].Value = _anoTable.TableName;
-                    cmdSubstituteIdentifiers.Parameters["@numberOfIntegersToUseInAnonymousRepresentation"].Value = _anoTable.NumberOfIntegersToUseInAnonymousRepresentation;
-                    cmdSubstituteIdentifiers.Parameters["@numberOfCharactersToUseInAnonymousRepresentation"].Value = _anoTable.NumberOfCharactersToUseInAnonymousRepresentation;
-                    cmdSubstituteIdentifiers.Parameters["@suffix"].Value = _anoTable.Suffix;
-
-                    SqlDataAdapter da = new SqlDataAdapter(cmdSubstituteIdentifiers);
                     DataTable dtToReturn = new DataTable();
-                
-                    da.Fill(dtToReturn);
+
+                    using (SqlCommand cmdSubstituteIdentifiers = new SqlCommand(substituteForANOIdentifiersProc, con)
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        CommandTimeout = 500,
+                        Transaction = transaction
+                    })
+                    {
+                        cmdSubstituteIdentifiers.Parameters.Add("@batch", SqlDbType.Structured);
+                        cmdSubstituteIdentifiers.Parameters.Add("@tableName", SqlDbType.VarChar, 500);
+                        cmdSubstituteIdentifiers.Parameters.Add("@numberOfIntegersToUseInAnonymousRepresentation",
+                            SqlDbType.Int);
+                        cmdSubstituteIdentifiers.Parameters.Add("@numberOfCharactersToUseInAnonymousRepresentation",
+                            SqlDbType.Int);
+                        cmdSubstituteIdentifiers.Parameters.Add("@suffix", SqlDbType.VarChar, 10);
+
+                        //table valued parameter
+                        cmdSubstituteIdentifiers.Parameters["@batch"].TypeName = "dbo.Batch";
+                        cmdSubstituteIdentifiers.Parameters["@batch"].Value = table;
+
+                        cmdSubstituteIdentifiers.Parameters["@tableName"].Value = _anoTable.TableName;
+                        cmdSubstituteIdentifiers.Parameters["@numberOfIntegersToUseInAnonymousRepresentation"].Value =
+                            _anoTable.NumberOfIntegersToUseInAnonymousRepresentation;
+                        cmdSubstituteIdentifiers.Parameters["@numberOfCharactersToUseInAnonymousRepresentation"].Value =
+                            _anoTable.NumberOfCharactersToUseInAnonymousRepresentation;
+                        cmdSubstituteIdentifiers.Parameters["@suffix"].Value = _anoTable.Suffix;
+
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmdSubstituteIdentifiers))
+                            da.Fill(dtToReturn);
+                    }
 
                     if (previewOnly)
                         transaction.Rollback();

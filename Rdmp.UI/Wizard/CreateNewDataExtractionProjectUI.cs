@@ -153,9 +153,11 @@ namespace Rdmp.UI.Wizard
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            var browser = new FolderBrowserDialog();
-            if (browser.ShowDialog() == DialogResult.OK)
-                tbExtractionDirectory.Text = browser.SelectedPath;
+            using (var browser = new FolderBrowserDialog())
+            {
+                if (browser.ShowDialog() == DialogResult.OK)
+                    tbExtractionDirectory.Text = browser.SelectedPath;
+            }
         }
 
         private void CreateNewDataExtractionProjectUI_Load(object sender, EventArgs e)
@@ -196,13 +198,12 @@ namespace Rdmp.UI.Wizard
                 ClearFile();
                 return;
             }
-            
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Comma Separated Values|*.csv";
-            DialogResult result = ofd.ShowDialog();
 
-            if (result == DialogResult.OK)
-                SelectFile(new FileInfo(ofd.FileName));
+            using (OpenFileDialog ofd = new OpenFileDialog {Filter = "Comma Separated Values|*.csv"})
+            {
+                if (ofd.ShowDialog() == DialogResult.OK)
+                    SelectFile(new FileInfo(ofd.FileName));
+            }
         }
 
         private void ClearFile()

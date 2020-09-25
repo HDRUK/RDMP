@@ -102,12 +102,14 @@ namespace Rdmp.UI.SimpleDialogs.SimpleFileImporting
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Comma Separated Values|*.csv|Excel File|*.xls*|Text File|*.txt|All Files|*.*";
-            DialogResult result = ofd.ShowDialog();
-
-            if (result == DialogResult.OK)
-                SelectFile(new FileInfo(ofd.FileName));
+            using (var ofd = new OpenFileDialog
+            {
+                Filter = "Comma Separated Values|*.csv|Excel File|*.xls*|Text File|*.txt|All Files|*.*"
+            })
+            {
+                if (ofd.ShowDialog() == DialogResult.OK)
+                    SelectFile(new FileInfo(ofd.FileName));
+            }
         }
 
         private void SelectFile(FileInfo fileName)

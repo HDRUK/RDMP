@@ -107,7 +107,10 @@ namespace Rdmp.Core.Repositories.Managers
             try
             {
                 XmlSerializer DeserializeXml = new XmlSerializer(typeof(RSAParameters));
-                return (RSAParameters)DeserializeXml.Deserialize(new StringReader(xml));
+                using (var reader = new StringReader(xml))
+                {
+                    return (RSAParameters)DeserializeXml.Deserialize(reader);
+                }
             }
             catch (Exception e)
             {
@@ -129,8 +132,11 @@ namespace Rdmp.Core.Repositories.Managers
             if (existingKey != null)
                 throw new NotSupportedException("There is already a key file at location:" + existingKey);
 
-            RSACryptoServiceProvider provider = new RSACryptoServiceProvider(4096);
-            RSAParameters p = provider.ExportParameters(true);
+            RSAParameters p;
+            using (RSACryptoServiceProvider provider = new RSACryptoServiceProvider(4096))
+            {
+                p = provider.ExportParameters(true);
+            }
 
             var fi = new FileInfo(path);
 

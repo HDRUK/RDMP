@@ -47,24 +47,25 @@ namespace Rdmp.UI
             {
                 string msg = exceptionCount == 10?"!":exceptionCount.ToString();
 
-                var f = new Font(FontFamily.GenericMonospace, EmSize,FontStyle.Bold);
-
                 var xStart = (Width - NotifyWidth)/2;
                 var yStart = (Height - NotifyWidth) / 2;
 
-                GraphicsPath gp = new GraphicsPath();
-                gp.AddEllipse(xStart,yStart,Width,Height);
+                using (GraphicsPath gp = new GraphicsPath())
+                {
+                    gp.AddEllipse(xStart, yStart, Width, Height);
 
-                PathGradientBrush pgb = new PathGradientBrush(gp);
-
-                pgb.CenterPoint = new PointF(Width / 2f,Height / 2f);
-                pgb.CenterColor = Color.FromArgb(255,218,188);
-                pgb.SurroundColors = new Color[] { Color.FromArgb(255, 55, 0) };
-
-
-                e.Graphics.FillEllipse(pgb, xStart, yStart, NotifyWidth, NotifyWidth);
-                e.Graphics.DrawString(msg,f,Brushes.White,new RectangleF(xStart + 3,yStart,NotifyWidth,NotifyWidth));
-                e.Graphics.DrawEllipse(new Pen(Brushes.White,2f), xStart, yStart, NotifyWidth, NotifyWidth);
+                    using (PathGradientBrush pgb = new PathGradientBrush(gp)
+                    {
+                        CenterPoint = new PointF(Width / 2f, Height / 2f),
+                        CenterColor = Color.FromArgb(255, 218, 188),
+                        SurroundColors = new Color[] { Color.FromArgb(255, 55, 0) }
+                    })
+                        e.Graphics.FillEllipse(pgb, xStart, yStart, NotifyWidth, NotifyWidth);
+                }
+                using (var f = new Font(FontFamily.GenericMonospace, EmSize, FontStyle.Bold))
+                    e.Graphics.DrawString(msg, f, Brushes.White, new RectangleF(xStart + 3, yStart, NotifyWidth, NotifyWidth));
+                using (var pen = new Pen(Brushes.White, 2f))
+                    e.Graphics.DrawEllipse(pen, xStart, yStart, NotifyWidth, NotifyWidth);
             }
         }
 

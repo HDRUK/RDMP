@@ -95,7 +95,8 @@ namespace Rdmp.Core.Curation.Data
             else
             {
                 var deserializer = new XmlSerializer(typeof (List<PermissionWindowPeriod>));
-                PermissionWindowPeriods = deserializer.Deserialize(new StringReader(permissionPeriodConfig)) as List<PermissionWindowPeriod>;
+                using(var reader = new StringReader(permissionPeriodConfig))
+                    PermissionWindowPeriods = deserializer.Deserialize(reader) as List<PermissionWindowPeriod>;
             }
         }
         /// <inheritdoc/>

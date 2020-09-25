@@ -559,45 +559,41 @@ namespace Rdmp.UI.ANOEngineeringUIs
 
         private void btnSavePlan_Click(object sender, EventArgs e)
         {
+            using (SaveFileDialog sfd = new SaveFileDialog { Filter = "Plans (*.plan)|*.plan" })
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    var fi = new FileInfo(sfd.FileName);
 
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Plans (*.plan)|*.plan";
-            if (sfd.ShowDialog() == DialogResult.OK)
-            {
-                var fi = new FileInfo(sfd.FileName);
+                    var cmdAnoTablesToo = new ExecuteCommandExportObjectsToFileUI(Activator, Activator.RepositoryLocator.CatalogueRepository.GetAllObjects<ANOTable>().ToArray(), fi.Directory);
+                    cmdAnoTablesToo.ShowInExplorer = false;
 
-                var cmdAnoTablesToo = new ExecuteCommandExportObjectsToFileUI(Activator, Activator.RepositoryLocator.CatalogueRepository.GetAllObjects<ANOTable>().ToArray(), fi.Directory);
-                cmdAnoTablesToo.ShowInExplorer = false;
+                    if (!cmdAnoTablesToo.IsImpossible)
+                        cmdAnoTablesToo.Execute();
 
-                if (!cmdAnoTablesToo.IsImpossible)
-                    cmdAnoTablesToo.Execute();
-
-                var json = JsonConvertExtensions.SerializeObject(_planManager, Activator.RepositoryLocator);
-                File.WriteAllText(fi.FullName,json);
-
-            }
+                    var json = JsonConvertExtensions.SerializeObject(_planManager, Activator.RepositoryLocator);
+                    File.WriteAllText(fi.FullName, json);
+                }
         }
 
         private void btnLoadPlan_Click(object sender, EventArgs e)
         {
             try
             {
-                OpenFileDialog ofd = new OpenFileDialog();
-                ofd.Filter = "Plans (*.plan)|*.plan";
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    var fi = new FileInfo(ofd.FileName);
-                    var json = File.ReadAllText(fi.FullName);
-                    _planManager = (ForwardEngineerANOCataloguePlanManager)
-                        JsonConvertExtensions.DeserializeObject(json, typeof(ForwardEngineerANOCataloguePlanManager), Activator.RepositoryLocator);
+                using (OpenFileDialog ofd = new OpenFileDialog { Filter = "Plans (*.plan)|*.plan" })
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        var fi = new FileInfo(ofd.FileName);
+                        var json = File.ReadAllText(fi.FullName);
+                        _planManager = (ForwardEngineerANOCataloguePlanManager)
+                            JsonConvertExtensions.DeserializeObject(json, typeof(ForwardEngineerANOCataloguePlanManager), Activator.RepositoryLocator);
 
-                    if (_planManager.StartDate != null)
-                        tbStartDate.Text = _planManager.StartDate.Value.ToString();
+                        if (_planManager.StartDate != null)
+                            tbStartDate.Text = _planManager.StartDate.Value.ToString();
 
-                    cbDateBasedLoad.Checked = _planManager.DateColumn != null;
-                    ddDateColumn.SelectedItem = _planManager.DateColumn;
+                        cbDateBasedLoad.Checked = _planManager.DateColumn != null;
+                        ddDateColumn.SelectedItem = _planManager.DateColumn;
 
-                }
+                    }
             }
             catch (Exception exception)
             {

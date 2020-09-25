@@ -141,9 +141,10 @@ namespace ResearchDataManagementPlatform
                 try
                 {
                     if (_persistenceFile.Exists)
-                        LoadFromXml(new FileStream(_persistenceFile.FullName, FileMode.Open));
+                        using(var stream = new FileStream(_persistenceFile.FullName, FileMode.Open))
+                            LoadFromXml(stream);
 
-                    //load the stateusing the method
+                    //load the state using the method
                 }
                 catch (Exception ex)
                 {
@@ -235,14 +236,8 @@ namespace ResearchDataManagementPlatform
 
                 ms.Seek(0, SeekOrigin.Begin);
 
-                try
-                {
-                    return new StreamReader(ms).ReadToEnd();
-                }
-                finally
-                {
-                    ms.Dispose();
-                }
+                using (var reader = new StreamReader(ms))
+                        return reader.ReadToEnd();
             }
         }
 

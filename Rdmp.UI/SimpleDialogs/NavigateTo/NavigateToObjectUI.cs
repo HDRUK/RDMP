@@ -416,7 +416,10 @@ namespace Rdmp.UI.SimpleDialogs.NavigateTo
             lock (oMatches)
             {
                 //draw Form background
-                e.Graphics.FillRectangle(new SolidBrush(SystemColors.Control), 0, 0, renderWidth, (int)((_matches.Count * RowHeight) + DrawMatchesStartingAtY));
+                using (var brush = new SolidBrush(SystemColors.Control))
+                {
+                    e.Graphics.FillRectangle(brush, 0, 0, renderWidth, (int)((_matches.Count * RowHeight) + DrawMatchesStartingAtY));
+                }
 
                 //draw the search icon
                 e.Graphics.DrawImage(_magnifier,0,0);
@@ -432,16 +435,17 @@ namespace Rdmp.UI.SimpleDialogs.NavigateTo
 
                         var img = _coreIconProvider.GetImage(_matches[i],isFavourite?OverlayKind.FavouredItem:OverlayKind.None);
 
-                        SolidBrush fillColor;
+                        Color fillColor;
 
                         if (i == keyboardSelectedIndex)
-                            fillColor = new SolidBrush(keyboardSelectionColor);
+                            fillColor = keyboardSelectionColor;
                         else if( i== mouseSelectedIndex)
-                            fillColor = new SolidBrush(mouseSelectionColor);
+                            fillColor = mouseSelectionColor;
                         else
-                            fillColor = new SolidBrush(Color.White);
+                            fillColor = Color.White;
 
-                        e.Graphics.FillRectangle(fillColor, 1, currentRowStartY, renderWidth, RowHeight);
+                        using (SolidBrush fillBrush=new SolidBrush(Color.White))
+                            e.Graphics.FillRectangle(fillBrush, 1, currentRowStartY, renderWidth, RowHeight);
 
                         string text = _matches[i].ToString();
 
@@ -474,16 +478,17 @@ namespace Rdmp.UI.SimpleDialogs.NavigateTo
                         if (lastParent != null)
                         {
 
-                            ColorMatrix cm = new ColorMatrix();
-                            cm.Matrix33 = 0.55f;
-                            ImageAttributes ia = new ImageAttributes();
-                            ia.SetColorMatrix(cm);
+                            ColorMatrix cm = new ColorMatrix {Matrix33 = 0.55f};
 
                             var rect = new Rectangle(renderWidth - 20, (int)currentRowStartY, 19, 19);
                             var img = _coreIconProvider.GetImage(lastParent);
 
                             //draw the parents image on the right
-                            e.Graphics.DrawImage(img, rect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, ia);
+                            using (ImageAttributes ia = new ImageAttributes())
+                            {
+                                ia.SetColorMatrix(cm);
+                                e.Graphics.DrawImage(img, rect, 0, 0, img.Width, img.Height, GraphicsUnit.Pixel, ia);
+                            }
 
                             var horizontalSpaceAvailableToDrawTextInto = renderWidth - (maxWidthUsedDuringRender + 20); 
 

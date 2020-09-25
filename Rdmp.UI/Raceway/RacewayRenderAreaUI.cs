@@ -331,41 +331,44 @@ namespace Rdmp.UI.Raceway
                             
                         for (int i = 0; i < _buckets.Length; i++)
                         {
-                            
-                            Brush brush;
-                            float lineHeightPercentage;
-
-                            int good = 0;
-                            int total = 0;
-
-                            if (dictionary.ContainsKey(_buckets[i]))
-                            {   
-                                good = dictionary[_buckets[i]].CountGood;
-                                total = dictionary[_buckets[i]].Total;
-
-                                float ratioGood = (float)good / total;
-
-                                brush = _brushes[(int) (ratioGood*100)];
-
-                                lineHeightPercentage = ((float)(total)) / maxRowsInAnyMonth;
-                            }
-                            else
+                            using (Brush blackBrush = new SolidBrush(Color.Black))
                             {
-                                brush = new SolidBrush(Color.Black);
-                                lineHeightPercentage = 0;
+                                Brush brush;
+                                float lineHeightPercentage;
+
+                                int good = 0;
+                                int total = 0;
+
+                                if (dictionary.ContainsKey(_buckets[i]))
+                                {
+                                    good = dictionary[_buckets[i]].CountGood;
+                                    total = dictionary[_buckets[i]].Total;
+
+                                    float ratioGood = (float) good / total;
+
+                                    brush = _brushes[(int) (ratioGood * 100)];
+
+                                    lineHeightPercentage = ((float) (total)) / maxRowsInAnyMonth;
+                                }
+                                else
+                                {
+                                    brush = blackBrush;
+                                    lineHeightPercentage = 0;
+                                }
+
+                                //now draw the actual bar
+                                //bar will occupy this much of the allowed Y space for the line e.g. 0.5 will be half way up the graph
+                                var thicknessRatio = _ignoreRowCounts ? 1 : lineHeightPercentage;
+
+                                var heightOfBarToDraw = eachRaceLaneHasThisMuchYSpace * thicknessRatio;
+                                var emptyYSpace = eachRaceLaneHasThisMuchYSpace - heightOfBarToDraw;
+
+                                var widthOfBarToDraw = eachBucketHasThisManyPixelsOfX;
+
+                                var rectToFill = new RectangleF(i * widthOfBarToDraw, startDrawingLaneAtY + emptyYSpace,
+                                    widthOfBarToDraw, heightOfBarToDraw);
+                                e.Graphics.FillRectangle(brush, rectToFill);
                             }
-
-                            //now draw the actual bar
-                            //bar will occupy this much of the allowed Y space for the line e.g. 0.5 will be half way up the graph
-                            var thicknessRatio = _ignoreRowCounts ? 1 : lineHeightPercentage;
-
-                            var heightOfBarToDraw = eachRaceLaneHasThisMuchYSpace * thicknessRatio;
-                            var emptyYSpace = eachRaceLaneHasThisMuchYSpace - heightOfBarToDraw;
-
-                            var widthOfBarToDraw = eachBucketHasThisManyPixelsOfX;
-
-                            var rectToFill = new RectangleF(i*widthOfBarToDraw,startDrawingLaneAtY + emptyYSpace,widthOfBarToDraw, heightOfBarToDraw);
-                            e.Graphics.FillRectangle(brush, rectToFill);
 
                             var fullRectHitbox = new RectangleF(rectToFill.X, startDrawingLaneAtY, widthOfBarToDraw, eachRaceLaneHasThisMuchYSpace);
                             if (fullRectHitbox.Contains(mousePosition))
@@ -460,7 +463,8 @@ namespace Rdmp.UI.Raceway
                     new Point((int) (_rectScrollUp.X + 10),(int) (_rectScrollUp.Y + 5))
                 };
 
-                e.Graphics.DrawPolygon(new Pen(_allowScrollUp?Color.LawnGreen:Color.Green), points);
+                using (var pen = new Pen(_allowScrollUp ? Color.LawnGreen : Color.Green))
+                    e.Graphics.DrawPolygon(pen, points);
             
                 _rectScrollDown = new RectangleF(Width - 20, startDrawingAxisAtY-20, 20, 20);
                 e.Graphics.FillRectangle(Brushes.Green, _rectScrollDown);
@@ -472,7 +476,8 @@ namespace Rdmp.UI.Raceway
                     new Point((int) (_rectScrollDown.X + 15),(int) (_rectScrollDown.Y +5)),
                     new Point((int) (_rectScrollDown.X + 10),(int) (_rectScrollDown.Y + 15))
                 };
-                e.Graphics.DrawPolygon(new Pen(_allowScrollDown?Color.LawnGreen:Color.Green), points);
+                using (var pen = new Pen(_allowScrollDown ? Color.LawnGreen : Color.Green))
+                    e.Graphics.DrawPolygon(pen, points);
             }
 
             if (_allowScrollDown && _allowScrollUp && GetMaxScrollDownToIndex() != 0)
@@ -490,17 +495,22 @@ namespace Rdmp.UI.Raceway
 
         private float DrawErrorText(string text, bool underLine, PaintEventArgs e, float startDrawingLaneAtY, float eachRaceLaneHasThisMuchYSpace, double middleLineOfCatalogueLabelY)
         {
-            
-            var redGradientBrush = new LinearGradientBrush(
-                new Point(0, (int) startDrawingLaneAtY),
-                new Point((int) Width, (int) eachRaceLaneHasThisMuchYSpace)
+
+            using (var redGradientBrush = new LinearGradientBrush(
+                new Point(0, (int)startDrawingLaneAtY),
+                new Point((int)Width, (int)eachRaceLaneHasThisMuchYSpace)
                 , Color.FromArgb(255, Color.Red), Color.FromArgb(50, Color.Red)
-                );
+                ))
+                e.Graphics.FillRectangle(redGradientBrush, 0, startDrawingLaneAtY, Width, eachRaceLaneHasThisMuchYSpace);
 
-            e.Graphics.FillRectangle(redGradientBrush, 0, startDrawingLaneAtY, Width, eachRaceLaneHasThisMuchYSpace);
-
-            
-            e.Graphics.DrawString(text, underLine?new Font(Font, FontStyle.Underline):Font, Brushes.White,
+            if (underLine)
+                using (var underLineFont = new Font(Font, FontStyle.Underline))
+                {
+                    e.Graphics.DrawString(text,underLineFont, Brushes.White,
+                        new Point(0, (int)middleLineOfCatalogueLabelY));
+                    return e.Graphics.MeasureString(text, underLineFont).Width;
+                }
+            e.Graphics.DrawString(text, Font, Brushes.White,
                 new Point(0, (int) middleLineOfCatalogueLabelY));
 
             return e.Graphics.MeasureString(text, Font).Width;

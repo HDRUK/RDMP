@@ -133,32 +133,31 @@ namespace Rdmp.UI.DataLoadUIs.LoadMetadataUIs.ProcessTasks
 
         private void btnBrowse_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Sql Files|*.sql";
-            ofd.CheckFileExists = true;
-
-            string oldFileName = null;
-            //open the browse dialog at the location of the currently specified file
-            if(!string.IsNullOrWhiteSpace(_processTask.Path))
+            using (OpenFileDialog ofd = new OpenFileDialog {Filter = "Sql Files|*.sql", CheckFileExists = true})
             {
-                var fi = new FileInfo(_processTask.Path);
-                oldFileName = fi.Name;
+                string oldFileName = null;
+                //open the browse dialog at the location of the currently specified file
+                if (!string.IsNullOrWhiteSpace(_processTask.Path))
+                {
+                    var fi = new FileInfo(_processTask.Path);
+                    oldFileName = fi.Name;
 
-                if (fi.Exists && fi.Directory != null)
-                    ofd.InitialDirectory = fi.Directory.FullName;
-            }
+                    if (fi.Exists && fi.Directory != null)
+                        ofd.InitialDirectory = fi.Directory.FullName;
+                }
 
-            if (ofd.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(ofd.FileName))
-            {
+                if (ofd.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(ofd.FileName))
+                {
 
-                //replace the old name with the new name for example if user specified task name is 'Run bob.sql to rename all 'Roberts' to 'Bob' then the user selects a different file e.g. "truncateAllTables.sql" then the new name becomes Run truncateAllTables.sql to rename all 'Roberts' to 'Bob'
-                if(oldFileName != null)
-                    _processTask.Name = _processTask.Name.Replace(oldFileName,Path.GetFileName(ofd.FileName));
+                    //replace the old name with the new name for example if user specified task name is 'Run bob.sql to rename all 'Roberts' to 'Bob' then the user selects a different file e.g. "truncateAllTables.sql" then the new name becomes Run truncateAllTables.sql to rename all 'Roberts' to 'Bob'
+                    if (oldFileName != null)
+                        _processTask.Name = _processTask.Name.Replace(oldFileName, Path.GetFileName(ofd.FileName));
 
-                _processTask.Path = ofd.FileName;
-                _processTask.SaveToDatabase();
-                Activator.RefreshBus.Publish(this,new RefreshObjectEventArgs(_processTask));
-                LoadFile();
+                    _processTask.Path = ofd.FileName;
+                    _processTask.SaveToDatabase();
+                    Activator.RefreshBus.Publish(this, new RefreshObjectEventArgs(_processTask));
+                    LoadFile();
+                }
             }
         }
     }

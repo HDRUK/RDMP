@@ -62,19 +62,18 @@ namespace Rdmp.UI.CommandExecution.AtomicCommands
 
             if (YesNo("Would you also like to import ShareDefinitions (metadata)?", "Import Metadata From File(s)"))
             {
-                OpenFileDialog ofd = new OpenFileDialog() { Multiselect = true };
-                ofd.Filter = "Share Definitions|*.sd";
-                if (ofd.ShowDialog() == DialogResult.OK)
-                {
-                    foreach (var f in ofd.FileNames)
-                        using (var stream = File.Open(f, FileMode.Open))
-                        {
-                            var newObjects = shareManager.ImportSharedObject(stream);
+                using (OpenFileDialog ofd = new OpenFileDialog { Multiselect = true, Filter = "Share Definitions|*.sd" })
+                    if (ofd.ShowDialog() == DialogResult.OK)
+                    {
+                        foreach (var f in ofd.FileNames)
+                            using (var stream = File.Open(f, FileMode.Open))
+                            {
+                                var newObjects = shareManager.ImportSharedObject(stream);
 
-                            if(newObjects != null)
-                                catalogues.AddRange(newObjects.OfType<ICatalogue>());
-                        }
-                }
+                                if (newObjects != null)
+                                    catalogues.AddRange(newObjects.OfType<ICatalogue>());
+                            }
+                    }
             }
 
             bool generateCatalogues = false;
