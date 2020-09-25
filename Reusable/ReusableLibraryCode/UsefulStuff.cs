@@ -351,7 +351,7 @@ namespace ReusableLibraryCode
 
         public static bool VerifyFileExists(string path, int timeout)
         {
-            var task = new Task<bool>(() =>
+            var task = new Task<bool>(() => // lgtm[cs/local-not-disposed] - Tasks don't really need to be .Disposed
             {
                 try
                 {

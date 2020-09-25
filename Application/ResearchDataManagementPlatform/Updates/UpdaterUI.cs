@@ -65,7 +65,7 @@ namespace ResearchDataManagementPlatform.Updates
         {
             pbLoading.Visible = true;
 
-            var t = new Task(()=>
+            var t = new Task(() =>  // lgtm[cs/local-not-disposed] - Tasks don't really need to be .Disposed
             {
                 try
                 {

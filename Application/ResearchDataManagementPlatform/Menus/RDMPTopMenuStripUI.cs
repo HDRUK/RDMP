@@ -109,7 +109,7 @@ namespace ResearchDataManagementPlatform.Menus
 
         private void dITAExtractionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Form f = new Form();
+            Form f = new Form(); // lgtm[cs/local-not-disposed] - f.Show() later triggers a .Dispose LGTM doesn't know about
             f.Text = "DITA Extraction of Catalogue Metadata";
             DitaExtractorUI d = new DitaExtractorUI();
             d.SetItemActivator(Activator);

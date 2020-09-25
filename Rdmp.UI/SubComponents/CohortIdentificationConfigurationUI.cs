@@ -527,7 +527,7 @@ namespace Rdmp.UI.SubComponents
 
             _runner = new CohortCompilerRunner(Compiler, _timeoutControls.Timeout);
             _runner.PhaseChanged += RunnerOnPhaseChanged;
-            new Task(() =>
+            new Task(() =>  // lgtm[cs/local-not-disposed] - Tasks don't really need to be .Disposed
             {
                 try
                 {
