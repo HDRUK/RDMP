@@ -93,6 +93,7 @@
         </Compile>
     </ItemGroup>
     <ItemGroup>
+      <PackageReference Include="AWSSDK.S3" VersionOverride="4.0.6.1" />
         <None Update="DataLoad\Engine\Resources\kvpTestFilePK.csv">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
